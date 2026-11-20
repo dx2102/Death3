@@ -7,7 +7,7 @@ https://github.com/dx2102/Death3/actions/workflows/release.yml , click Run workf
 
 | Branch | Built (Pittsburgh time) | Download |
 |---|---|---|
-| soul-capture | 2026-11-18 06:22:50 | [release](https://github.com/dx2102/Death3/releases/tag/v20261118.62250.0) |
+| soul-capture | 2026-11-20 15:18:33 | [release](https://github.com/dx2102/Death3/releases/tag/v20261120.151833.0) |
 | main | 2026-11-18 03:14:01 | [release](https://github.com/dx2102/Death3/releases/tag/main-20261118-031401-23afc33) |
 
 This file is updated by the release workflow.
