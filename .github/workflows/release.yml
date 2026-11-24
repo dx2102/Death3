@@ -1,12 +1,16 @@
 # Build the game for Windows and macOS and publish both as a GitHub release.
-# Run it from the Actions tab ("Run workflow"), pick the branch to build.
-# Builds from main become normal releases, other branches become prereleases.
+# Run it from the Actions tab ("Run workflow"), pick the repo and branch to build.
+# Builds from main of Raeshana/Death become normal releases, everything else becomes a prerelease.
 # Each release is titled with the branch and the Pittsburgh time of the build.
 name: Release
 
 on:
   workflow_dispatch:
     inputs:
+      repo:
+        description: Repo to build (owner/name, must be public)
+        default: Raeshana/Death
+        required: true
       branch:
         description: Branch to build
         default: main
@@ -19,8 +23,8 @@ permissions:
   contents: write
 
 env:
-  # where the game code lives; drop this once the workflow sits in that repo itself
-  SOURCE_REPO: Raeshana/Death
+  # where the game code lives, picked in the Run workflow form
+  SOURCE_REPO: ${{ inputs.repo }}
   NEST_LIBS: https://github.com/15-466/nest-libs/releases/download/v0.15
 
 jobs:
@@ -45,8 +49,10 @@ jobs:
           # version number, so this keeps the newest build on top. Branch and time are in the title.
           day=$(TZ=America/New_York date -d @$now +%Y%m%d); hms=$(TZ=America/New_York date -d @$now +%H%M%S)
           tag="v$day.$((10#$hms)).0"
-          title="built from: $BRANCH branch, $(TZ=America/New_York date -d @$now '+%Y-%m-%d %H:%M:%S')"
-          if [ "$BRANCH" = main ]; then pre=false; else pre=true; fi
+          # name the repo too unless it is the default one, so equal branch names don't mix in the build list
+          if [ "$SOURCE_REPO" = Raeshana/Death ]; then what="$BRANCH"; else what="$SOURCE_REPO $BRANCH"; fi
+          title="built from: $what branch, $(TZ=America/New_York date -d @$now '+%Y-%m-%d %H:%M:%S')"
+          if [ "$SOURCE_REPO" = Raeshana/Death ] && [ "$BRANCH" = main ]; then pre=false; else pre=true; fi
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
           echo "title=$title" >> "$GITHUB_OUTPUT"
@@ -198,7 +204,7 @@ jobs:
 
           ## Making a new build
 
-          Open https://github.com/$GITHUB_REPOSITORY/actions/workflows/release.yml , click **Run workflow**, type the branch to build and press the green button. A new release shows up here about two minutes later.
+          Open https://github.com/$GITHUB_REPOSITORY/actions/workflows/release.yml , click **Run workflow**, type the repo and branch to build and press the green button. A new release shows up here about two minutes later.
           EOF
           # the optional notes typed into the Run workflow form go first:
           if [ -n "$NOTES" ]; then { printf '%s\n\n' "$NOTES"; cat notes.md; } > with-notes.md && mv with-notes.md notes.md; fi
@@ -219,9 +225,9 @@ jobs:
               if m and (m[1] not in latest or m[2] > latest[m[1]][0]):
                   latest[m[1]] = (m[2], r["tagName"])
           lines = [
-              "# Builds of " + source, "",
-              f"Windows and macOS builds of https://github.com/{source}. To make a new one, open",
-              f"https://github.com/{repo}/actions/workflows/release.yml , click Run workflow and type a branch name.", "",
+              "# Game builds", "",
+              "Windows and macOS builds of https://github.com/Raeshana/Death (or another repo named in the branch column).",
+              f"To make a new one, open https://github.com/{repo}/actions/workflows/release.yml , click Run workflow and type a repo and branch.", "",
               "## Latest build of each branch", "",
               "| Branch | Built (Pittsburgh time) | Download |",
               "|---|---|---|",
